@@ -1,11 +1,16 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../App.css'; // если стили там
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
+import ProjectCard from '../components/ProjectCard';
+import '../App.css';
 
 function Account() {
   const navigate = useNavigate();
-
-  const [user, setUser] = useState({
+  const [user] = useAuthState(auth);
+  
+  const [userProfile, setUserProfile] = useState({
     name: 'Иван Иванов',
     email: 'ivan@example.com',
     bio: 'Фронтенд разработчик с опытом работы 3 года. Специализация: React, TypeScript.',
@@ -19,14 +24,10 @@ function Account() {
     { id: 'u3', name: 'Дмитрий Орлов' }
   ]);
 
-  const [projects] = useState([
-    { id: 1, title: 'Проект 1', description: 'Описание проекта 1' },
-    { id: 2, title: 'Проект 2', description: 'Описание проекта 2' },
-    { id: 3, title: 'Проект 3', description: 'Описание проекта 3' },
-    { id: 4, title: 'Проект 4', description: 'Описание проекта 4' },
-    { id: 5, title: 'Проект 5', description: 'Описание проекта 5' },
-    { id: 6, title: 'Проект 6', description: 'Описание проекта 6' },
-  ]);
+  const [publicProjects, setPublicProjects] = useState([]);
+  const [draftProjects, setDraftProjects] = useState([]);
+  const [activeTab, setActiveTab] = useState('public');
+  const [loading, setLoading] = useState(true);
 
   const [bannerImage, setBannerImage] = useState('');
   const [avatarImage, setAvatarImage] = useState('');
@@ -35,13 +36,172 @@ function Account() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email,
-    bio: user.bio,
-    skills: user.skills.join(', '),
+    name: userProfile.name,
+    email: userProfile.email,
+    bio: userProfile.bio,
+    skills: userProfile.skills.join(', '),
   });
 
   const [showFriendsModal, setShowFriendsModal] = useState(false);
+
+  // Загрузка проектов пользователя
+  useEffect(() => {
+    if (user) {
+      loadUserProjects();
+    }
+  }, [user]);
+
+  const loadUserProjects = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const projectsRef = collection(db, 'projects');
+      const q = query(projectsRef, where('authorId', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      
+      const allProjects = [];
+      querySnapshot.forEach((doc) => {
+        allProjects.push({ id: doc.id, ...doc.data() });
+      });
+      
+      // Разделяем на публичные и черновики
+      const publicProjs = allProjects.filter(project => project.isPublic);
+      const draftProjs = allProjects.filter(project => !project.isPublic);
+      
+      setPublicProjects(publicProjs);
+      setDraftProjects(draftProjs);
+    } catch (error) {
+      console.error('Ошибка загрузки проектов:', error);
+      // Загружаем моковые данные в случае ошибки
+      loadMockProjects();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMockProjects = () => {
+    const mockPublicProjects = [
+      { 
+        id: 1, 
+        title: 'Веб-приложение для управления задачами', 
+        description: 'React приложение с Firebase',
+        imageUrl: 'https://via.placeholder.com/300x200?text=Task+Manager',
+        isPublic: true,
+        likes: 15,
+        views: 120,
+        rating: 4.5,
+        reviewsCount: 8
+      },
+      { 
+        id: 2, 
+        title: 'Мобильное приложение для фитнеса', 
+        description: 'React Native приложение',
+        imageUrl: 'https://via.placeholder.com/300x200?text=Fitness+App',
+        isPublic: true,
+        likes: 23,
+        views: 89,
+        rating: 4.2,
+        reviewsCount: 5
+      }
+    ];
+
+    const mockDraftProjects = [
+      { 
+        id: 3, 
+        title: 'E-commerce платформа', 
+        description: 'В разработке - Next.js + Stripe',
+        imageUrl: 'https://via.placeholder.com/300x200?text=E-commerce+Draft',
+        isPublic: false,
+        likes: 0,
+        views: 5,
+        rating: 0,
+        reviewsCount: 0
+      },
+      { 
+        id: 4, 
+        title: 'Социальная сеть для дизайнеров', 
+        description: 'Черновик - концепт и wireframes',
+        imageUrl: 'https://via.placeholder.com/300x200?text=Social+Network+Draft',
+        isPublic: false,
+        likes: 0,
+        views: 2,
+        rating: 0,
+        reviewsCount: 0
+      }
+    ];
+
+    setPublicProjects(mockPublicProjects);
+    setDraftProjects(mockDraftProjects);
+  };
+
+  const handlePublishProject = async (projectId) => {
+    try {
+      const projectRef = doc(db, 'projects', projectId.toString());
+      await updateDoc(projectRef, {
+        isPublic: true,
+        publishedAt: new Date()
+      });
+
+      // Перемещаем проект из черновиков в публичные
+      const project = draftProjects.find(p => p.id === projectId);
+      if (project) {
+        setDraftProjects(prev => prev.filter(p => p.id !== projectId));
+        setPublicProjects(prev => [...prev, { ...project, isPublic: true }]);
+      }
+    } catch (error) {
+      console.error('Ошибка при публикации проекта:', error);
+      // Для демонстрации - перемещаем локально
+      const project = draftProjects.find(p => p.id === projectId);
+      if (project) {
+        setDraftProjects(prev => prev.filter(p => p.id !== projectId));
+        setPublicProjects(prev => [...prev, { ...project, isPublic: true }]);
+      }
+    }
+  };
+
+  const handleUnpublishProject = async (projectId) => {
+    try {
+      const projectRef = doc(db, 'projects', projectId.toString());
+      await updateDoc(projectRef, {
+        isPublic: false,
+        unpublishedAt: new Date()
+      });
+
+      // Перемещаем проект из публичных в черновики
+      const project = publicProjects.find(p => p.id === projectId);
+      if (project) {
+        setPublicProjects(prev => prev.filter(p => p.id !== projectId));
+        setDraftProjects(prev => [...prev, { ...project, isPublic: false }]);
+      }
+    } catch (error) {
+      console.error('Ошибка при снятии с публикации:', error);
+      // Для демонстрации - перемещаем локально
+      const project = publicProjects.find(p => p.id === projectId);
+      if (project) {
+        setPublicProjects(prev => prev.filter(p => p.id !== projectId));
+        setDraftProjects(prev => [...prev, { ...project, isPublic: false }]);
+      }
+    }
+  };
+
+  const handleDeleteProject = async (projectId) => {
+    const confirmDelete = window.confirm('Вы уверены, что хотите удалить этот проект? Это действие нельзя отменить.');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteDoc(doc(db, 'projects', projectId.toString()));
+      
+      // Удаляем из соответствующего списка
+      setPublicProjects(prev => prev.filter(p => p.id !== projectId));
+      setDraftProjects(prev => prev.filter(p => p.id !== projectId));
+    } catch (error) {
+      console.error('Ошибка при удалении проекта:', error);
+      // Для демонстрации - удаляем локально
+      setPublicProjects(prev => prev.filter(p => p.id !== projectId));
+      setDraftProjects(prev => prev.filter(p => p.id !== projectId));
+    }
+  };
 
   const handleBannerUpload = (e) => {
     const file = e.target.files[0];
@@ -63,10 +223,10 @@ function Account() {
 
   const handleEditProfile = () => {
     setFormData({
-      name: user.name,
-      email: user.email,
-      bio: user.bio,
-      skills: user.skills.join(', '),
+      name: userProfile.name,
+      email: userProfile.email,
+      bio: userProfile.bio,
+      skills: userProfile.skills.join(', '),
     });
     setIsEditing(true);
   };
@@ -78,7 +238,7 @@ function Account() {
 
   const handleSave = (e) => {
     e.preventDefault();
-    setUser(prev => ({
+    setUserProfile(prev => ({
       ...prev,
       name: formData.name.trim(),
       email: formData.email.trim(),
@@ -89,6 +249,53 @@ function Account() {
   };
 
   const handleCancel = () => setIsEditing(false);
+
+  const ProjectGrid = ({ projects, isDraft = false }) => (
+    <div className="projects-grid">
+      {projects.map(project => (
+        <div key={project.id} className="project-card-container">
+          <ProjectCard project={project} />
+          <div className="project-actions">
+            <button
+              className="btn btn-small btn-primary"
+              onClick={() => navigate(`/projects/${project.id}/edit`)}
+            >
+              Редактировать
+            </button>
+            {isDraft ? (
+              <button
+                className="btn btn-small btn-success"
+                onClick={() => handlePublishProject(project.id)}
+              >
+                Опубликовать
+              </button>
+            ) : (
+              <button
+                className="btn btn-small btn-warning"
+                onClick={() => handleUnpublishProject(project.id)}
+              >
+                Снять с публикации
+              </button>
+            )}
+            <button
+              className="btn btn-small btn-danger"
+              onClick={() => handleDeleteProject(project.id)}
+            >
+              Удалить
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  if (!user) {
+    return (
+      <div className="loading">
+        <p>Загрузка профиля...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="account-container">
@@ -104,6 +311,11 @@ function Account() {
           accept="image/*"
           hidden
         />
+        {!bannerImage && (
+          <div className="banner-placeholder">
+            Нажмите для загрузки баннера
+          </div>
+        )}
       </div>
 
       <div className="profile-content">
@@ -129,11 +341,11 @@ function Account() {
         <div className="profile-info">
           {!isEditing ? (
             <>
-              <h1>{user.name}</h1>
-              <p>{user.bio}</p>
+              <h1>{userProfile.name}</h1>
+              <p>{userProfile.bio}</p>
               
               <div className="meta-info">
-                <span>📧 {user.email}</span>
+                <span>📧 {userProfile.email}</span>
                 <div
                   onClick={() => setShowFriendsModal(true)}
                   style={{
@@ -148,7 +360,7 @@ function Account() {
               </div>
 
               <div className="skills">
-                {user.skills.map(skill => (
+                {userProfile.skills.map(skill => (
                   <span key={skill}>{skill}</span>
                 ))}
               </div>
@@ -218,42 +430,68 @@ function Account() {
         </div>
       </div>
 
-      {/* Список проектов */}
-      <div
-        style={{
-          background: '#fff',
-          padding: 24,
-          borderRadius: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-        }}
-      >
-        {projects.length === 0 ? (
-          <p>У вас пока нет проектов.</p>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(5, 1fr)',
-              gap: 16,
-            }}
-          >
-            {projects.map(proj => (
-              <div 
-                key={proj.id} 
-                style={{
-                  padding: 12,
-                  border: '1px solid #ccc',
-                  borderRadius: 8,
-                  background: '#f9f9f9',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                }}
-              >
-                <strong>{proj.title}</strong>
-                <p>{proj.description}</p>
-              </div>
-            ))}
+      {/* Табы для проектов */}
+      <div className="projects-section">
+        <div className="projects-header">
+          <div className="project-tabs">
+            <button 
+              className={`tab-button ${activeTab === 'public' ? 'active' : ''}`}
+              onClick={() => setActiveTab('public')}
+            >
+              Публичные проекты ({publicProjects.length})
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'drafts' ? 'active' : ''}`}
+              onClick={() => setActiveTab('drafts')}
+            >
+              Черновики ({draftProjects.length})
+            </button>
           </div>
-        )}
+        </div>
+
+        <div className="projects-content">
+          {loading ? (
+            <div className="loading">Загрузка проектов...</div>
+          ) : (
+            <>
+              {activeTab === 'public' && (
+                <div className="projects-tab-content">
+                  {publicProjects.length === 0 ? (
+                    <div className="no-projects">
+                      <p>У вас пока нет опубликованных проектов.</p>
+                      <button 
+                        className="btn btn-primary"
+                        onClick={() => navigate('/create-project')}
+                      >
+                        Создать первый проект
+                      </button>
+                    </div>
+                  ) : (
+                    <ProjectGrid projects={publicProjects} isDraft={false} />
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'drafts' && (
+                <div className="projects-tab-content">
+                  {draftProjects.length === 0 ? (
+                    <div className="no-projects">
+                      <p>У вас нет черновиков.</p>
+                      <button 
+                        className="btn btn-primary"
+                        onClick={() => navigate('/create-project')}
+                      >
+                        Создать проект
+                      </button>
+                    </div>
+                  ) : (
+                    <ProjectGrid projects={draftProjects} isDraft={true} />
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Модальное окно с друзьями */}

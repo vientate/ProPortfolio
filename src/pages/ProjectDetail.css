@@ -1,0 +1,585 @@
+/* Дополнительные стили для страницы проекта */
+
+.project-detail {
+  padding: 40px 0;
+  min-height: calc(100vh - 120px);
+}
+
+.project-header {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 50px;
+  background: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+.project-main-image {
+  position: relative;
+  flex: 1;
+  min-height: 400px;
+  overflow: hidden;
+}
+
+.project-main-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.project-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.3));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.project-main-image:hover .project-overlay {
+  opacity: 1;
+}
+
+.project-main-image:hover img {
+  transform: scale(1.02);
+}
+
+.project-overlay .project-actions {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.project-overlay .action-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  backdrop-filter: blur(10px);
+}
+
+.project-overlay .action-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.project-overlay .action-btn.liked,
+.project-overlay .action-btn.favorited {
+  background: var(--accent-color);
+  color: white;
+}
+
+.project-info {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-info h1 {
+  margin-bottom: 15px;
+  font-size: 2.2rem;
+  color: var(--dark-color);
+  line-height: 1.2;
+}
+
+.author-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.author-link:hover {
+  text-decoration: underline;
+}
+
+.project-meta {
+  margin-bottom: 25px;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  font-size: 1.1rem;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.star.half-filled {
+  color: #ffc107;
+  position: relative;
+}
+
+.star.empty {
+  color: #e0e0e0;
+}
+
+.meta-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 0.95rem;
+  color: var(--gray-color);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-icon {
+  font-size: 1rem;
+}
+
+.date {
+  margin-left: auto;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 25px;
+}
+
+.project-tags .tag {
+  background-color: #f0f4ff;
+  color: var(--primary-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.project-links {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.project-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 2px solid;
+}
+
+.project-link.github {
+  border-color: #333;
+  color: #333;
+}
+
+.project-link.github:hover {
+  background: #333;
+  color: white;
+}
+
+.project-link.website {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.project-link.website:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.project-link.youtube {
+  border-color: #ff0000;
+  color: #ff0000;
+}
+
+.project-link.youtube:hover {
+  background: #ff0000;
+  color: white;
+}
+
+.owner-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: auto;
+}
+
+.project-content {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.project-description-section {
+  background: white;
+  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.project-description-section h2 {
+  margin-bottom: 20px;
+  color: var(--dark-color);
+  font-size: 1.8rem;
+}
+
+.description-content {
+  line-height: 1.7;
+  color: var(--dark-color);
+  font-size: 1rem;
+}
+
+.description-content strong {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.project-gallery {
+  background: white;
+  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.project-gallery h2 {
+  margin-bottom: 25px;
+  color: var(--dark-color);
+  font-size: 1.8rem;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.gallery-item {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover {
+  transform: translateY(-5px);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.project-reviews {
+  background: white;
+  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.reviews-header h2 {
+  margin: 0;
+  color: var(--dark-color);
+  font-size: 1.8rem;
+}
+
+.average-rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gray-color);
+}
+
+.add-review {
+  background: #f8f9fa;
+  padding: 30px;
+  border-radius: var(--border-radius);
+  margin-bottom: 40px;
+}
+
+.add-review h3 {
+  margin-bottom: 20px;
+  color: var(--dark-color);
+  font-size: 1.3rem;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.review {
+  padding: 25px;
+  border: 1px solid #eee;
+  border-radius: var(--border-radius);
+  transition: box-shadow 0.3s ease;
+}
+
+.review:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.review-author {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-author strong {
+  font-weight: 600;
+  color: var(--dark-color);
+  font-size: 1.05rem;
+}
+
+.review-rating {
+  display: flex;
+  gap: 2px;
+}
+
+.review-date {
+  color: var(--gray-color);
+  font-size: 0.9rem;
+}
+
+.review-content p {
+  line-height: 1.6;
+  color: var(--dark-color);
+  margin: 0;
+}
+
+.review-actions {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.helpful-btn {
+  background: none;
+  border: 1px solid #ddd;
+  color: var(--gray-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.helpful-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 40px;
+  color: var(--gray-color);
+}
+
+/* Режим совместной работы */
+.collaboration-mode {
+  background: white;
+  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.collaboration-mode h2 {
+  margin-bottom: 30px;
+  color: var(--dark-color);
+  font-size: 1.8rem;
+}
+
+.collaboration-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.code-editor-placeholder,
+.chat-placeholder {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: var(--border-radius);
+  border: 1px solid #eee;
+}
+
+.code-editor-placeholder h3,
+.chat-placeholder h3 {
+  margin-bottom: 15px;
+  color: var(--dark-color);
+}
+
+.mock-editor {
+  background: #1e1e1e;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 15px;
+}
+
+.editor-toolbar {
+  background: #2d2d2d;
+  padding: 10px 15px;
+  display: flex;
+  gap: 15px;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.editor-content {
+  padding: 20px;
+}
+
+.editor-content pre {
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.mock-chat {
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin-top: 15px;
+  overflow: hidden;
+}
+
+.chat-message {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+}
+
+.chat-message:last-of-type {
+  border-bottom: none;
+}
+
+.chat-input {
+  display: flex;
+  padding: 15px;
+  background: #f8f9fa;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  margin-right: 10px;
+  font-size: 0.9rem;
+}
+
+.chat-input button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .project-header {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .project-main-image {
+    min-height: 250px;
+  }
+  
+  .project-info {
+    padding: 25px;
+  }
+  
+  .project-info h1 {
+    font-size: 1.8rem;
+  }
+  
+  .meta-stats {
+    flex-wrap: wrap;
+  }
+  
+  .date {
+    margin-left: 0;
+  }
+  
+  .project-links {
+    flex-direction: column;
+  }
+  
+  .owner-actions {
+    flex-direction: column;
+  }
+  
+  .project-description-section,
+  .project-gallery,
+  .project-reviews {
+    padding: 25px;
+  }
+  
+  .reviews-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .collaboration-tools {
+    grid-template-columns: 1fr;
+  }
+}
